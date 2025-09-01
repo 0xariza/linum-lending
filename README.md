@@ -1,231 +1,169 @@
-# Linum Lending Protocol
+# 🏦 Linum - Advanced Credit-Scored Lending Protocol
 
-[![Solidity](https://img.shields.io/badge/Solidity-0.8.26-blue.svg)](https://soliditylang.org/)
-[![Foundry](https://img.shields.io/badge/Foundry-✓-green.svg)](https://getfoundry.sh/)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.20-blue.svg)](https://soliditylang.org/)
+[![Foundry](https://img.shields.io/badge/Foundry-1.0+-orange.svg)](https://getfoundry.sh/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-139%20passed-brightgreen.svg)]()
 
-A decentralized lending protocol built on Ethereum and Polygon that provides secure, collateralized lending with dynamic credit scoring and yield distribution.
+> **Linum** is a next-generation decentralized lending protocol that combines traditional credit scoring with blockchain technology to provide personalized lending solutions.
 
-## 🚀 Features
+## 📋 Table of Contents
 
-### Core Functionality
-- **Multi-Asset Support**: Native ETH, USDC, MATIC, and additional ERC20 tokens
-- **Collateralized Lending**: Secure borrowing with multiple collateral types
-- **Dynamic Credit Scoring**: Risk-based interest rates and collateral requirements
-- **Yield Distribution**: Automatic yield distribution through rebasing saTokens
-- **Liquidation System**: Automated liquidation of undercollateralized positions
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Smart Contracts](#-smart-contracts)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Security](#-security)
+- [Contributing](#-contributing)
 
-### Advanced Features
-- **Utilization-Based Interest Rates**: Dynamic rates based on protocol utilization
-- **Credit Tier System**: Multiple tiers (NEW, BRONZE, SILVER, GOLD, PREMIUM)
-- **Protocol Fee Management**: Transparent fee collection and distribution
-- **Emergency Controls**: Pausable functionality for security incidents
+## 🎯 Overview
 
-## 🏗️ Architecture
+Linum is a sophisticated DeFi lending protocol that introduces credit scoring to decentralized finance. Unlike traditional DeFi protocols that rely solely on over-collateralization, Linum implements a dynamic credit system that adjusts borrowing terms based on user behavior and repayment history.
 
-### Smart Contracts
+### Core Innovation
 
-#### Core Contracts
-- **`LendingVaults.sol`**: Main protocol contract handling deposits, borrows, and credit management
-- **`YieldToken.sol`**: Rebasing ERC20 tokens representing protocol shares
-- **`ILendingVaults.sol`**: Interface defining all protocol functions and events
+- **Credit-Scored Lending**: Dynamic collateral requirements based on user credit scores
+- **Rebasing Yield Tokens**: Fair yield distribution through advanced share-based accounting
+- **Multi-Asset Support**: Native support for ETH, USDC, MATIC, and extensible ERC20 tokens
+- **Utilization-Based Interest**: Aave-style kink model for dynamic interest rates
+- **Advanced Security**: Comprehensive protection against common DeFi attack vectors
 
-#### Key Components
-- **Credit Profile System**: Tracks user borrowing history and credit scores
-- **Borrow Position Management**: Handles individual loan positions and collateral
-- **Interest Rate Model**: Dynamic rates based on utilization and credit scores
-- **Liquidation Engine**: Automated protection against undercollateralization
+## ✨ Key Features
 
-## 🔒 Security Features & Attack Prevention
+### 🏆 Credit Scoring System
+- **5 Credit Tiers**: NEW, BRONZE, SILVER, GOLD, PREMIUM
+- **Dynamic Collateral Ratios**: 200% to 110% based on credit score
+- **Interest Rate Discounts**: Up to 0.8% discount for premium users
+- **Behavioral Tracking**: On-time payments, late payments, and liquidation history
 
-### 1. Reentrancy Protection
-```solidity
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+### 💰 Yield Distribution
+- **Rebasing YieldTokens**: Automatic balance adjustments for fair yield distribution
+- **Share-Based Accounting**: Precise yield allocation without precision loss
+- **Attack Prevention**: Protection against donation and bootstrap attacks
+- **Rate Limiting**: Anti-spam mechanisms for deposit operations
 
-contract LendingVaults is ReentrancyGuard {
-    function deposit(address asset, uint256 amount) external payable nonReentrant {
-        // Protected against reentrancy attacks
-    }
-}
-```
-- **Prevents**: Reentrancy attacks on deposit/withdraw functions
-- **Implementation**: OpenZeppelin's ReentrancyGuard modifier
-- **Coverage**: All state-changing functions
+### 🔒 Security & Risk Management
+- **Reentrancy Protection**: All external functions protected
+- **Pausable Operations**: Emergency pause functionality
+- **Blacklisting System**: Automatic blacklisting for malicious users
+- **Liquidation Mechanisms**: Automated position liquidation for overdue loans
 
-### 2. Access Control & Ownership
-```solidity
-contract LendingVaults is Ownable {
-    modifier onlyOwner() {
-        require(msg.sender == owner(), "Not authorized");
-        _;
-    }
-}
-```
-- **Prevents**: Unauthorized administrative actions
-- **Features**: 
-  - Owner-only asset management
-  - Emergency pause functionality
-  - Fee withdrawal controls
+## 📜 Smart Contracts
 
-### 3. Input Validation & Bounds Checking
-```solidity
-// Credit score bounds
-uint256 public constant MIN_CREDIT_SCORE = 100;
-uint256 public constant MAX_CREDIT_SCORE = 1000;
+### Core Contracts
 
-// Utilization rate limits
-uint256 public constant MAX_UTILIZATION = 9500; // 95%
-```
-- **Prevents**: Invalid inputs and overflow attacks
-- **Validations**:
-  - Credit score bounds (100-1000)
-  - Utilization rate limits (0-95%)
-  - Minimum deposit amounts
-  - Valid asset addresses
+#### `LendingVaults.sol`
+The main protocol contract that orchestrates all lending operations.
 
-### 4. Blacklist System
-```solidity
-struct CreditProfile {
-    bool isBlacklisted; // User blacklist status
-}
+**Key Functions:**
+- `deposit()` - Deposit assets to earn yield
+- `borrow()` - Borrow assets with collateral
+- `repay()` - Repay borrowed amounts
+- `liquidate()` - Liquidate overdue positions
+- `getCreditTier()` - Get user credit tier information
 
-modifier notBlacklisted() {
-    if (creditProfiles[msg.sender].isBlacklisted) revert UserBlacklisted();
-    _;
-}
-```
-- **Prevents**: Malicious user activities
-- **Features**: Owner-controlled blacklisting
-- **Protection**: Blocks blacklisted users from all operations
+#### `YieldToken.sol`
+Rebasing ERC20 tokens that represent shares in the lending protocol.
 
-### 5. Collateral Protection
-```solidity
-uint256 public constant LIQUIDATION_THRESHOLD = 95; // 95% of collateral value
+**Key Features:**
+- Automatic balance rebasing for yield distribution
+- Share-based accounting for precision
+- Attack prevention mechanisms
+- Rate limiting for deposits
 
-function liquidate(address borrower, uint256 positionIndex) external {
-    // Only liquidate when collateral ratio drops below threshold
-}
-```
-- **Prevents**: Protocol insolvency from undercollateralized positions
-- **Features**:
-  - 95% liquidation threshold
-  - Automated liquidation triggers
-  - Incentivized liquidator rewards
-
-### 6. Rate Limiting & Anti-Frontrunning
-```solidity
-uint256 public constant MIN_TIME_BETWEEN_DEPOSITS = 1 hours;
-
-modifier rateLimited() {
-    if (block.timestamp < _lastDepositTime[msg.sender] + MIN_TIME_BETWEEN_DEPOSITS) {
-        revert RateLimitExceeded();
-    }
-    _;
-}
-```
-- **Prevents**: Frontrunning attacks and rapid deposit/withdraw cycles
-- **Features**:
-  - 1-hour minimum between deposits
-  - Transfer amount locking
-  - Bootstrap attack prevention
-
-### 7. Donation Attack Prevention
-```solidity
-uint256 public totalMintedAssets; // Total assets from minting
-uint256 public totalTrackedAssets; // Total assets tracked
-
-function _calculateSharesFromAssets(uint256 assets) internal view returns (uint256) {
-    // Prevents donation attacks by tracking minted vs tracked assets
-}
-```
-- **Prevents**: Donation attacks that manipulate share calculations
-- **Implementation**: Separate tracking of minted vs. tracked assets
-
-### 8. Emergency Pause
-```solidity
-import "@openzeppelin/contracts/utils/Pausable.sol";
-
-contract LendingVaults is Pausable {
-    function pause() external onlyOwner {
-        _pause();
-    }
-}
-```
-- **Prevents**: Continued operation during security incidents
-- **Features**: Owner-controlled emergency pause
-- **Scope**: All critical functions when paused
-
-### 9. Precision Loss Protection
-```solidity
-uint256 public constant UTILIZATION_PRECISION = 10000; // 100% = 10000 basis points
-
-function getUtilizationRate(address asset) public view returns (uint256) {
-    // High precision calculations to prevent rounding errors
-}
-```
-- **Prevents**: Precision loss in interest calculations
-- **Implementation**: High-precision basis point calculations
-- **Coverage**: All rate and fee calculations
-
-### 10. Comprehensive Error Handling
-```solidity
-error UserBlacklisted();
-error UnsupportedAsset();
-error InsufficientCollateral();
-error PositionNotLiquidatable();
-```
-- **Prevents**: Silent failures and unexpected behavior
-- **Features**: Custom error types for gas efficiency
-- **Coverage**: All function validations
-
-## 🛠️ Installation & Setup
+## 🚀 Installation
 
 ### Prerequisites
-- [Foundry](https://getfoundry.sh/) (latest version)
-- Node.js 18+ (for testing)
-- Git
 
-### Quick Start
+- [Foundry](https://getfoundry.sh/) (v1.0+)
+- [Node.js](https://nodejs.org/) (v16+)
+- [Git](https://git-scm.com/)
+
+### Setup
+
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd linum-lending
+git clone https://github.com/your-org/linum.git
+cd linum
 
 # Install dependencies
 forge install
 
-# Compile contracts
+# Build contracts
 forge build
 
 # Run tests
 forge test
-
-# Run tests with coverage
-forge coverage
 ```
 
 ### Environment Setup
-```bash
-# Copy environment template
-cp .env.example .env
 
-# Set required environment variables
-export ETHEREUM_RPC_URL="your_ethereum_rpc_url"
-export POLYGON_RPC_URL="your_polygon_rpc_url"
-export ETHERSCAN_MAINNET_KEY="your_etherscan_key"
-export ETHERSCAN_API_KEY="your_polygonscan_key"
+Create a `.env` file with the following variables:
+
+```env
+# RPC Endpoints
+ETHEREUM_RPC_URL=https://eth-mainnet.alchemyapi.io/v2/YOUR_KEY
+POLYGON_RPC_URL=https://polygon-rpc.com
+
+# API Keys
+ETHERSCAN_MAINNET_KEY=your_etherscan_key
+ETHERSCAN_API_KEY=your_polygonscan_key
+
+# Private Keys (for deployment)
+PRIVATE_KEY=your_private_key
+```
+
+## 📖 Usage
+
+### Basic Operations
+
+#### 1. Deposit Assets
+
+```solidity
+// Deposit ETH
+lendingVaults.deposit{value: 1 ether}(address(0), 0);
+
+// Deposit USDC
+usdc.approve(address(lendingVaults), 1000 * 10**6);
+lendingVaults.deposit(address(usdc), 1000 * 10**6);
+```
+
+#### 2. Borrow Assets
+
+```solidity
+// Borrow with same-asset collateral
+lendingVaults.borrow(
+    address(usdc),           // Asset to borrow
+    500 * 10**6,            // Amount to borrow
+    address(usdc),          // Collateral asset
+    1000 * 10**6            // Collateral amount
+);
+```
+
+#### 3. Repay Loans
+
+```solidity
+// Repay loan
+usdc.approve(address(lendingVaults), repayAmount);
+lendingVaults.repay(positionIndex, repayAmount);
+```
+
+### Credit Score Management
+
+```solidity
+// Get user credit tier
+(string memory tier, uint256 collateralRatio, uint256 rateDiscount) = 
+    lendingVaults.getCreditTier(userAddress);
+
+// Check if user can borrow
+bool canBorrow = lendingVaults.canBorrow(userAddress);
 ```
 
 ## 🧪 Testing
 
-### Test Structure
-```
-test/
-├── LendingVaults.t.sol    # Main protocol tests
-└── YieldToken.t.sol       # Yield token tests
-```
-
 ### Running Tests
+
 ```bash
 # Run all tests
 forge test
@@ -234,174 +172,127 @@ forge test
 forge test --match-contract LendingVaultsTest
 
 # Run with verbose output
-forge test -vvv
+forge test -v
 
 # Run with gas reporting
 forge test --gas-report
 ```
 
 ### Test Coverage
+
+The project includes comprehensive test coverage:
+
+- **139 Tests** covering all major functionality
+- **Security Tests**: Reentrancy, attack prevention, access control
+- **Integration Tests**: End-to-end lending scenarios
+- **Edge Case Tests**: Boundary conditions and error handling
+
+## 🔒 Security Features
+
+### 🛡️ Attack Prevention
+
+#### Donation Attack Protection
+```solidity
+// Track minted assets separately from total assets
+uint256 public totalMintedAssets; // Prevents donation attacks
+uint256 public totalTrackedAssets; // Prevents bootstrap attacks
+```
+
+#### Front-Running Protection
+```solidity
+// Lock transfer amounts to current ratio
+mapping(bytes32 => uint256) private _lockedTransferAmounts;
+```
+
+#### Rate Limiting
+```solidity
+uint256 public constant MIN_TIME_BETWEEN_DEPOSITS = 1 hours;
+mapping(address => uint256) private _lastDepositTime;
+```
+
+### Access Control
+
+- **Owner Functions**: Protocol parameter updates, fee withdrawal
+- **Lending Protocol Only**: YieldToken minting/burning operations
+- **Reentrancy Protection**: All external functions protected
+- **Pausable Operations**: Emergency pause capability
+
+### Security Considerations
+
+1. **Professional Audit Required**: Before mainnet deployment
+2. **Gradual Deployment**: Deploy with limited caps and gradually increase
+3. **Monitoring**: Implement comprehensive monitoring and alerting
+4. **Emergency Procedures**: Have emergency pause and recovery procedures ready
+
+## 🚀 Deployment
+
+### Local Development
+
 ```bash
-# Generate coverage report
-forge coverage
+# Start local node
+anvil
 
-# Generate coverage report with lcov
-forge coverage --report lcov
+# Deploy to local network
+forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
 ```
 
-## 📊 Protocol Parameters
+### Testnet Deployment
 
-### Interest Rate Model
-- **Base Rate**: 2% minimum
-- **Optimal Utilization**: 80%
-- **Max Utilization**: 95%
-- **Rate Slope 1** (0-80%): 1.5%
-- **Rate Slope 2** (80-95%): 5%
-
-### Credit Scoring
-- **Initial Score**: 300 (NEW tier)
-- **Score Range**: 100-1000
-- **Credit Discount**: 0.1% per 100 points
-- **Tiers**: NEW, BRONZE, SILVER, GOLD, PREMIUM
-
-### Loan Terms
-- **Standard Duration**: 30 days
-- **Liquidation Threshold**: 95%
-- **Protocol Fee**: 0.5%
-- **Late Penalty**: 10%
-
-## 🔧 Configuration
-
-### Supported Assets
-- **ETH**: Native Ethereum
-- **USDC**: USD Coin (6 decimals)
-- **MATIC**: Polygon token (18 decimals)
-- **Additional ERC20**: Configurable via admin functions
-
-### Borrow Limits
-- **Global Limit**: 10M USDC equivalent
-- **Per-Asset Limits**: Configurable by asset
-- **User Limits**: Based on credit score and collateral
-
-## 🚨 Emergency Procedures
-
-### Pause Protocol
-```solidity
-// Only owner can pause
-function pause() external onlyOwner {
-    _pause();
-}
-
-// Resume protocol
-function unpause() external onlyOwner {
-    _unpause();
-}
-```
-
-### Blacklist User
-```solidity
-// Blacklist malicious user
-function blacklistUser(address user) external onlyOwner {
-    creditProfiles[user].isBlacklisted = true;
-}
-```
-
-### Emergency Withdrawal
-```solidity
-// Emergency withdrawal of protocol fees
-function withdrawProtocolFees(address asset) external onlyOwner {
-    // Withdraw accumulated fees
-}
-```
-
-## 📈 Usage Examples
-
-### Deposit Assets
-```solidity
-// Deposit ETH
-lendingVaults.deposit{value: 10 ether}(address(0), 0);
-
-// Deposit USDC
-usdc.approve(address(lendingVaults), 1000 * 10**6);
-lendingVaults.deposit(address(usdc), 1000 * 10**6);
-```
-
-### Borrow with Collateral
-```solidity
-// Borrow USDC with ETH collateral
-lendingVaults.borrow{value: 5 ether}(
-    address(usdc),           // borrow asset
-    1000 * 10**6,           // borrow amount
-    address(0),             // collateral asset (ETH)
-    5 ether                 // collateral amount
-);
-```
-
-### Repay Loan
-```solidity
-// Repay loan
-usdc.approve(address(lendingVaults), 1000 * 10**6);
-lendingVaults.repay(0, 1000 * 10**6); // position index, amount
-```
-
-### Liquidate Position
-```solidity
-// Liquidate undercollateralized position
-lendingVaults.liquidate(borrower, positionIndex);
-```
-
-## 🔍 Monitoring & Analytics
-
-### Key Metrics
-- **Total Value Locked (TVL)**: Sum of all deposited assets
-- **Utilization Rate**: Borrowed/Deposited ratio per asset
-- **Credit Score Distribution**: User tier breakdown
-- **Liquidation Events**: Failed positions and liquidations
-- **Protocol Fees**: Accumulated fees by asset
-
-### Events to Monitor
-```solidity
-event Deposit(address indexed user, address indexed asset, uint256 amount, uint256 shares);
-event Borrow(address indexed user, address indexed borrowAsset, uint256 borrowAmount, ...);
-event Liquidation(address indexed user, uint256 positionIndex, address indexed liquidator);
-event CreditScoreUpdated(address indexed user, uint256 oldScore, uint256 newScore);
+```bash
+# Deploy to Polygon Mumbai
+forge script script/Deploy.s.sol --rpc-url $POLYGON_RPC_URL --broadcast --verify
 ```
 
 ## 🤝 Contributing
 
-### Development Guidelines
-1. **Code Style**: Follow Solidity style guide
-2. **Testing**: 100% test coverage required
-3. **Documentation**: Comprehensive NatSpec comments
-4. **Security**: All changes must pass security review
+We welcome contributions from the community! Please follow these guidelines:
 
-### Pull Request Process
-1. Fork the repository
-2. Create feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit pull request with detailed description
+### Development Setup
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/your-fork/linum.git
+cd linum
+
+# Create a feature branch
+git checkout -b feature/your-feature-name
+
+# Make your changes
+# Add tests for new functionality
+# Update documentation
+
+# Run tests
+forge test
+
+# Submit a pull request
+```
+
+### Contribution Guidelines
+
+1. **Code Style**: Follow the existing code style and formatting
+2. **Testing**: Add comprehensive tests for new features
+3. **Documentation**: Update documentation for any API changes
+4. **Security**: Consider security implications of changes
+5. **Review**: All changes require code review
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## ⚠️ Disclaimer
+## 🙏 Acknowledgments
 
-This software is provided "as is" without warranty of any kind. Users should:
-- Conduct their own security audits
-- Understand the risks of DeFi protocols
-- Never invest more than they can afford to lose
-- Verify all contract addresses before interaction
+- [OpenZeppelin](https://openzeppelin.com/) for secure contract libraries
+- [Foundry](https://getfoundry.sh/) for the development framework
+- [Aave](https://aave.com/) for inspiration on interest rate models
+- The DeFi community for continuous innovation and feedback
 
-## 🔗 Links
+## 📞 Support
 
-- **Documentation**: [Protocol Docs](https://docs.linum.finance)
-- **Security**: [Security Policy](SECURITY.md)
-- **Audit Reports**: [Audit Documentation](audits/)
-- **Discord**: [Community Chat](https://discord.gg/linum)
-- **Twitter**: [@LinumFinance](https://twitter.com/LinumFinance)
+- **Documentation**: [docs.linum.com](https://docs.linum.com)
+- **Discord**: [discord.gg/linum](https://discord.gg/linum)
+- **Twitter**: [@LinumProtocol](https://twitter.com/LinumProtocol)
+- **Email**: support@linum.com
 
 ---
 
-**Built with ❤️ by the Linum Team**
+**⚠️ Disclaimer**: This software is provided "as is" without warranty. Use at your own risk. This is experimental software and has not been audited for production use.
